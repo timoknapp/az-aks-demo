@@ -1,5 +1,7 @@
 # az-demo-fn
 
+![architecture](architecture.png)
+
 ## Prerequisites
 
 * Azure CLI version 2.47.0 or later
@@ -48,7 +50,7 @@ az group create -n $resourceGroupName -l $location
 az deployment group create \
         -g $resourceGroupName \
         -n $deploymentName \
-        --template-file template.bicep \
+        --template-file main.bicep \
         --parameters parameters.json
 
 az deployment group show -g $resourceGroupName -n $deploymentName --query "properties.outputs" -o json > deployment-outputs.json
@@ -82,3 +84,4 @@ kubectl apply -f aspnetapp.yaml
 * Postgres Flexible Server
 * Storage Account
 * Container Registry
+* (AKS KEDA Addon)
