@@ -8,14 +8,20 @@ param aksServicePrincipalClientSecret string
 @description('objectId of the service principal.')
 param aksServicePrincipalObjectId string
 
-@description('Containers DNS server IP address.')
+@description('VNET IP address prefix.')
 param virtualNetworkAddressPrefix string = '10.0.0.0/8'
 
-@description('Containers DNS server IP address.')
-param aksSubnetAddressPrefix string = '10.0.0.0/16'
+@description('AKS subnet IP address prefix.')
+param aksSubnetAddressPrefix string = '10.254.0.0/16'
 
-@description('Containers DNS server IP address.')
-param applicationGatewaySubnetAddressPrefix string = '10.1.0.0/16'
+@description('App Gateway subnet IP address prefix.')
+param applicationGatewaySubnetAddressPrefix string = '10.255.252.0/23'
+
+@description('Database subnet IP address prefix.')
+param databaseSubnetAddressPrefix string = '10.255.224.0/20'
+
+@description('Redis subnet IP address prefix.')
+param redisSubnetAddressPrefix string = '10.255.254.0/24'
 
 @description('Optional DNS prefix to use with hosted Kubernetes API server FQDN.')
 param aksDnsPrefix string = 'aks'
@@ -244,10 +250,13 @@ param aksAgentVMSize string = 'Standard_D3_v2'
 param kubernetesVersion string = '1.24.10'
 
 @description('A CIDR notation IP range from which to assign service cluster IPs.')
-param aksServiceCIDR string = '10.2.0.0/16'
+param aksServiceCIDR string = '10.252.0.0/15'
 
 @description('Containers DNS server IP address.')
-param aksDnsServiceIP string = '10.2.0.10'
+param aksDnsServiceIP string = '10.252.0.10'
+
+@description('IP Address of the Ingress Controller within AKS used as a backend pool in Application Gateway.')
+param aksIngressServiceIP string = '10.252.0.20'
 
 @description('A CIDR notation IP for Docker bridge.')
 param aksDockerBridgeCIDR string = '172.17.0.1/16'
@@ -262,18 +271,34 @@ param aksEnableRBAC bool = false
 ])
 param applicationGatewaySku string = 'WAF_v2'
 
+@description('The Admin username of the PostgreSQL server.')
+param postgresqlServerAdminLogin string = 'postgres'
+
+@description('The password of the PostgreSQL server administrator.')
+@secure()
+param postgresqlServerAdminPassword string
+
 param location string = resourceGroup().location
 
 var resgpguid = substring(replace(guid(resourceGroup().id), '-', ''), 0, 4)
 var vnetName = 'vnet-${location}-${resgpguid}'
 var nsgAppGwName = 'nsg-appgw-${location}-${resgpguid}'
 var nsgAksName = 'nsg-aks-${location}-${resgpguid}'
+var nsgDatabaseName = 'nsg-database-${location}-${resgpguid}'
+var nsgRedisName = 'nsg-redis-${location}-${resgpguid}'
 var applicationGatewayName = 'appgw-${location}-${resgpguid}'
 var identityName = 'appgw-identity-${resgpguid}'
 var applicationGatewayPublicIpName = 'pip-appgw-${location}-${resgpguid}'
 var kubernetesSubnetName = 'snet-k8s'
 var applicationGatewaySubnetName = 'snet-appgw'
+var databaseSubnetName = 'snet-database'
+var redisSubnetName = 'snet-redis'
 var aksClusterName = 'aks-${location}-${resgpguid}'
+var redisCacheName = 'redis-${location}-${resgpguid}'
+var postgresqlServerName = 'psql-${location}-${resgpguid}'
+var storageAccountName = 'storage${resgpguid}'
+var containerRegistryName = 'acr${location}${resgpguid}'
+var logAnalyticsWorkspaceName = 'law-${location}-${resgpguid}'
 var applicationGatewayPublicIpId = applicationGatewayPublicIp.id
 var applicationGatewayId = applicationGateway.id
 var kubernetesSubnetId = resourceId('Microsoft.Network/virtualNetworks/subnets', vnetName, kubernetesSubnetName)
@@ -319,6 +344,32 @@ resource vnet 'Microsoft.Network/virtualNetworks@2018-08-01' = {
             id: networkSecurityGroupAppGw.id
           }
           addressPrefix: applicationGatewaySubnetAddressPrefix
+        }
+      }
+      {
+        name: databaseSubnetName
+        properties: {
+          networkSecurityGroup: {
+            id: networkSecurityGroupDatabase.id
+          }
+          addressPrefix: databaseSubnetAddressPrefix
+          delegations: [
+            {
+              name: 'Microsoft.DBforPostgreSQL/flexibleServers'
+              properties: {
+                serviceName: 'Microsoft.DBforPostgreSQL/flexibleServers'
+              }
+            }
+          ]
+        }
+      }
+      {
+        name: redisSubnetName
+        properties: {
+          networkSecurityGroup: {
+            id: networkSecurityGroupRedis.id
+          }
+          addressPrefix: redisSubnetAddressPrefix
         }
       }
     ]
@@ -418,6 +469,50 @@ resource networkSecurityGroupAks 'Microsoft.Network/networkSecurityGroups@2021-0
   }
 }
 
+resource networkSecurityGroupDatabase 'Microsoft.Network/networkSecurityGroups@2021-02-01' = {
+  name: nsgDatabaseName
+  location: location
+  properties: {
+    securityRules: [
+      {
+        name: 'AllowAnyDatabaseInbound'
+        properties: {
+          priority: 1000
+          access: 'Allow'
+          direction: 'Inbound'
+          destinationPortRange: '5432'
+          protocol: 'Tcp'
+          sourcePortRange: '*'
+          sourceAddressPrefix: '*'
+          destinationAddressPrefix: '*'
+        }
+      }
+    ]
+  }
+}
+
+resource networkSecurityGroupRedis 'Microsoft.Network/networkSecurityGroups@2021-02-01' = {
+  name: nsgRedisName
+  location: location
+  properties: {
+    securityRules: [
+      {
+        name: 'AllowAnyRedisInbound'
+        properties: {
+          priority: 1000
+          access: 'Allow'
+          direction: 'Inbound'
+          destinationPortRange: '6379'
+          protocol: 'Tcp'
+          sourcePortRange: '*'
+          sourceAddressPrefix: '*'
+          destinationAddressPrefix: '*'
+        }
+      }
+    ]
+  }
+}
+
 resource applicationGatewayPublicIp 'Microsoft.Network/publicIPAddresses@2018-08-01' = {
   name: applicationGatewayPublicIpName
   location: location
@@ -475,9 +570,13 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2018-08-01' =
     ]
     backendAddressPools: [
       {
-        name: 'bepool'
+        name: 'aksIngressControllerPool'
         properties: {
-          backendAddresses: []
+          backendAddresses: [
+            {
+              ipAddress: aksIngressServiceIP
+            }
+          ]
         }
       }
     ]
@@ -512,7 +611,7 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2018-08-01' =
             id: resourceId('Microsoft.Network/applicationGateways/httpListeners', applicationGatewayName, 'httpListener')
           }
           backendAddressPool: {
-            id: resourceId('Microsoft.Network/applicationGateways/backendAddressPools', applicationGatewayName, 'bepool')
+            id: resourceId('Microsoft.Network/applicationGateways/backendAddressPools', applicationGatewayName, 'aksIngressControllerPool')
           }
           backendHttpSettings: {
             id: resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', applicationGatewayName, 'setting')
@@ -562,6 +661,20 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2023-03-02-previ
     enableRBAC: aksEnableRBAC
     nodeResourceGroup: '${resourceGroup().name}-deps'
     dnsPrefix: aksDnsPrefix
+    addonProfiles: {
+      omsagent: {
+        enabled: true
+        config: {
+          logAnalyticsWorkspaceResourceID: logAnalyticsWorkspace.id
+        }
+      }
+      azurepolicy: {
+        enabled: true
+        config: {
+          version: 'v2'
+        }
+      }
+    }
     agentPoolProfiles: [
       {
         name: 'nodepool'
@@ -597,6 +710,121 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2023-03-02-previ
 
     RoleAssignmentDeploymentForKubenetesSp
   ]
+}
+
+resource containerRegistry 'Microsoft.ContainerRegistry/registries@2021-09-01' = {
+  name: containerRegistryName
+  location: location
+  sku: {
+    name: 'Premium'
+  }
+  properties: {
+    adminUserEnabled: false
+    networkRuleSet: {
+      defaultAction: 'Deny'
+    }
+  }
+}
+
+@description('This is the built-in ACRPull role.')
+resource acrPull 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+  name: '7f951dda-4ed3-4680-a7ca-43fe172d538d'
+  scope: subscription()
+}
+
+resource acrPullAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: 'acr-assignment-${resgpguid}'
+  scope: containerRegistry
+  properties: {
+    roleDefinitionId: acrPull.id
+    principalId: aksCluster.properties.identityProfile.kubeletidentity.objectId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource privateDnsZonePostgres 'Microsoft.Network/privateDnsZones@2020-06-01' = {
+  name: 'freenow.postgres.database.azure.com'
+  location: 'global'
+}
+
+resource privateDnsZoneVnetLinkPostgres 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
+  name: 'vnetlink-dnszone-postgres'
+  parent: privateDnsZonePostgres
+  location: location
+  properties: {
+    registrationEnabled: false
+    virtualNetwork: {
+      id: resourceId('Microsoft.Network/virtualNetworks', vnetName)
+    }
+  }
+}
+
+resource postgresqlServer 'Microsoft.DBforPostgreSQL/flexibleServers@2021-06-01' = {
+  name: postgresqlServerName
+  location: location
+  sku: {
+    name: 'Standard_B2s'
+    tier: 'Burstable'
+  }
+  properties: {
+    storage: {
+      storageSizeGB: 32
+    }
+    version: '13'
+    administratorLogin: postgresqlServerAdminLogin
+    administratorLoginPassword: postgresqlServerAdminPassword
+    backup: {
+      backupRetentionDays: 7
+      geoRedundantBackup: 'Disabled'
+    }
+    highAvailability: {
+      mode: 'Disabled'
+    }
+    availabilityZone: '1'
+    network: {
+      delegatedSubnetResourceId: resourceId('Microsoft.Network/virtualNetworks/subnets', vnetName, databaseSubnetName)
+      privateDnsZoneArmResourceId: privateDnsZonePostgres.id
+    }
+  }
+}
+
+resource redisCache 'Microsoft.Cache/redis@2023-04-01' = {
+  name: redisCacheName
+  location: location
+  properties: {
+    sku: {
+      name: 'Premium'
+      family: 'P'
+      capacity: 1
+    }
+    enableNonSslPort: false
+    minimumTlsVersion: '1.2'
+    subnetId: resourceId('Microsoft.Network/virtualNetworks/subnets', vnetName, redisSubnetName)
+  }
+}
+
+resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
+  name: storageAccountName
+  location: location
+  sku: {
+    name: 'Standard_LRS'
+  }
+  kind: 'StorageV2'
+  properties: {
+    accessTier: 'Hot'
+    supportsHttpsTrafficOnly: true
+  }
+}
+
+resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
+  name: logAnalyticsWorkspaceName
+  location: location
+  properties: {
+    retentionInDays: 30
+    sku: {
+      name: 'PerGB2018'
+    }
+  }
 }
 
 output subscriptionId string = subscription().subscriptionId

@@ -78,10 +78,12 @@ kubectl apply -f aspnetapp.yaml
 
 ### TODOs
 
-* AKS Cluster with App GW (Nginx Ingress Controller)
+* Application Gateway with one Backend Pool pointing to AKS Ingress Controller
 * AKS Api Server VNET integration
-* Azure AD Pod Identity
-* Postgres Flexible Server
-* Storage Account
-* Container Registry
+* ~~Azure AD Pod Identity~~
+* ~~Postgres Flexible Server~~
+* ~~Storage Account~~
+* ~~Redis Cache~~
+* ~~Container Registry~~
+* ~~Log Analytics Workspace~~
 * (AKS KEDA Addon)
