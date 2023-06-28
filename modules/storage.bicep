@@ -5,7 +5,7 @@ param baseName string
 param location string
 
 @description('Specifies the admin username of the PostgreSQL server.')
-param postgresServerAdminLogin string = 'postgres'
+param postgresServerAdminLogin string
 
 @description('Specifies the password of the PostgreSQL server administrator.')
 @secure()
