@@ -1,9 +1,6 @@
 @description('Specifies the base name for all resources.')
 param baseName string
 
-@description('Specifies a unique identifier to be added to resource names.')
-param id string = '001'
-
 @description('Specifies the location to deploy to.')
 param location string
 
@@ -33,7 +30,7 @@ param redisSubnetResourceId string
 param availabilityZone string = '1'
 
 resource postgresqlServer 'Microsoft.DBforPostgreSQL/flexibleServers@2023-03-01-preview' = {
-  name: '${baseName}${id}'
+  name: '${baseName}-dbsrv'
   location: location
   sku: {
     name: 'Standard_B2s'
@@ -62,7 +59,7 @@ resource postgresqlServer 'Microsoft.DBforPostgreSQL/flexibleServers@2023-03-01-
 }
 
 resource redisCache 'Microsoft.Cache/redis@2023-04-01' = {
-  name: '${baseName}${id}'
+  name: '${baseName}-cache'
   location: location
   properties: {
     sku: {
@@ -77,7 +74,7 @@ resource redisCache 'Microsoft.Cache/redis@2023-04-01' = {
 }
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
-  name: '${baseName}${id}'
+  name: '${baseName}data'
   location: location
   sku: {
     name: 'Standard_LRS'

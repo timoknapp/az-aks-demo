@@ -32,7 +32,7 @@ param enableCSIDiskDriverV2 bool = false
 @description('Specifies whether to enable KEDA (preview).')
 param enableKEDA bool = false
 
-resource aksCluster 'Microsoft.ContainerService/managedClusters@2023-03-02-preview' = {
+resource aksCluster 'Microsoft.ContainerService/managedClusters@2023-04-01' = {
   name: '${baseName}-cluster'
   location: location
   properties: {
@@ -79,7 +79,6 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2023-03-02-previ
       networkPlugin: 'azure'
       serviceCidr: '10.0.0.0/16'
       dnsServiceIP: '10.0.0.10'
-      dockerBridgeCidr: '172.17.0.1/16'
     }
 
     oidcIssuerProfile: {
@@ -108,7 +107,7 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2023-03-02-previ
   }
 }
 
-resource containerRegistry 'Microsoft.ContainerRegistry/registries@2021-09-01' = {
+resource containerRegistry 'Microsoft.ContainerRegistry/registries@2022-12-01' = {
   name: baseName
   location: location
   sku: {

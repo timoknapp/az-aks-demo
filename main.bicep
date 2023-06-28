@@ -1,5 +1,5 @@
 @description('Specifies the base name for all resources.')
-param baseName string = 'freenow'
+param baseName string = 'freenow${substring(replace(guid(resourceGroup().id), '-', ''), 0, 4)}'
 
 @description('Specifies the location to deploy to.')
 param location string = resourceGroup().location
@@ -56,7 +56,7 @@ module cluster 'modules/cluster.bicep' = {
   params: {
     baseName: baseName
     location: location
-    clusterSubnetResourceId: '' //network.outputs.clusterSubnetResourceId
+    clusterSubnetResourceId: network.outputs.clusterSubnetResourceId
     kubernetesVersion: kubernetesVersion
     agentCount: agentCount
     agentVMSize: agentVMSize

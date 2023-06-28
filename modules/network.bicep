@@ -35,18 +35,14 @@ var webApplicationFirewallConfiguration = {
   enabled: 'true'
   firewallMode: 'Detection'
 }
-var vnetName = 'vnet-${location}'
-var nsgAppGwName = 'nsg-appgw-${location}'
-var nsgAksName = 'nsg-aks-${location}'
-var nsgDatabaseName = 'nsg-database-${location}'
-var nsgRedisName = 'nsg-redis-${location}'
-var kubernetesSubnetName = 'snet-k8s'
-var applicationGatewaySubnetName = 'snet-appgw'
-var databaseSubnetName = 'snet-database'
-var redisSubnetName = 'snet-redis'
+var vnetName = '${baseName}-vnet'
+var kubernetesSubnetName = 'k8s-subnet'
+var applicationGatewaySubnetName = 'appgw-subnet'
+var databaseSubnetName = 'postgres-subnet'
+var redisSubnetName = 'redis-subnet'
 
 resource networkSecurityGroupAppGw 'Microsoft.Network/networkSecurityGroups@2021-02-01' = {
-  name: nsgAppGwName
+  name: '${baseName}-appgw-nsg'
   location: location
   properties: {
     securityRules: [
@@ -91,7 +87,7 @@ resource networkSecurityGroupAppGw 'Microsoft.Network/networkSecurityGroups@2021
 }
 
 resource networkSecurityGroupAks 'Microsoft.Network/networkSecurityGroups@2021-02-01' = {
-  name: nsgAksName
+  name: '${baseName}-k8s-nsg'
   location: location
   properties: {
     securityRules: [
@@ -139,7 +135,7 @@ resource networkSecurityGroupAks 'Microsoft.Network/networkSecurityGroups@2021-0
 }
 
 resource networkSecurityGroupDatabase 'Microsoft.Network/networkSecurityGroups@2021-02-01' = {
-  name: nsgDatabaseName
+  name: '${baseName}-postgres-nsg'
   location: location
   properties: {
     securityRules: [
@@ -161,7 +157,7 @@ resource networkSecurityGroupDatabase 'Microsoft.Network/networkSecurityGroups@2
 }
 
 resource networkSecurityGroupRedis 'Microsoft.Network/networkSecurityGroups@2021-02-01' = {
-  name: nsgRedisName
+  name: '${baseName}-redis-nsg'
   location: location
   properties: {
     securityRules: [
@@ -183,7 +179,7 @@ resource networkSecurityGroupRedis 'Microsoft.Network/networkSecurityGroups@2021
 }
 
 resource vnet 'Microsoft.Network/virtualNetworks@2018-08-01' = {
-  name: vnetName
+  name: '${baseName}-vnet'
   location: location
   properties: {
     addressSpace: {
@@ -368,6 +364,7 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2018-08-01' =
 }
 
 output postgresPrivateDnsZoneResourceId string = privateDnsZonePostgres.id
+output clusterSubnetResourceId string = vnet.properties.subnets[0].id
 output postgresSubnetResourceId string = vnet.properties.subnets[2].id
 output redisSubnetResourceId string = vnet.properties.subnets[3].id
 
