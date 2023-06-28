@@ -32,14 +32,28 @@ param enableCSIDiskDriverV2 bool = false
 @description('Specifies whether to enable KEDA (preview).')
 param enableKEDA bool = false
 
-resource aksCluster 'Microsoft.ContainerService/managedClusters@2023-04-01' = {
-  name: '${baseName}-cluster'
+var clusterName = '${baseName}-cluster'
+
+resource aksIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2022-01-31-preview' = {
   location: location
+  name: clusterName
+}
+
+resource aksCluster 'Microsoft.ContainerService/managedClusters@2023-04-01' = {
+  name: clusterName
+  location: location
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${aksIdentity.id}': {}
+    }
+  }  
   properties: {
     kubernetesVersion: kubernetesVersion
     enableRBAC: true
     nodeResourceGroup: '${resourceGroup().name}-deps'
     dnsPrefix: baseName
+    
     addonProfiles: {
       omsagent: {
         enabled: true
@@ -54,6 +68,7 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2023-04-01' = {
         }
       }
     }
+
     agentPoolProfiles: [
       {
         name: 'nodepool1'
@@ -103,7 +118,6 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2023-04-01' = {
         enabled: true
       }
     } : null
-
   }
 }
 
