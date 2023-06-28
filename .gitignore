@@ -6,3 +6,4 @@
 # Ignore auth.json file
 auth.json
 deployment-outputs.json
+parameters.json
