@@ -12,7 +12,7 @@ param location string
 param applicationGatewaySku string = 'WAF_v2'
 
 @description('IP Address of the Ingress Controller within AKS used as a backend pool in Application Gateway.')
-param aksIngressServiceIP string = '10.252.0.20'
+param aksIngressServiceIP string = '10.1.127.127'
 
 @description('VNET IP address prefix.')
 param virtualNetworkAddressPrefix string = '10.1.0.0/16'
