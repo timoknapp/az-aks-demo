@@ -179,7 +179,7 @@ resource networkSecurityGroupRedis 'Microsoft.Network/networkSecurityGroups@2021
 }
 
 resource vnet 'Microsoft.Network/virtualNetworks@2018-08-01' = {
-  name: '${baseName}-vnet'
+  name: vnetName
   location: location
   properties: {
     addressSpace: {
