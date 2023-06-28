@@ -29,6 +29,9 @@ param databaseSubnetAddressPrefix string = '10.1.224.0/20'
 @description('Redis subnet IP address prefix.')
 param redisSubnetAddressPrefix string = '10.1.254.0/24'
 
+@description('AKS API Server subnet IP address prefix.')
+param aksApiServerSubnetAddressPrefix string = '10.1.255.0/24'
+
 var applicationGatewayName = '${baseName}-appgw'
 var applicationGatewayPublicIpName = '${baseName}-pip-appgw'
 var webApplicationFirewallConfiguration = {
@@ -37,6 +40,7 @@ var webApplicationFirewallConfiguration = {
 }
 var vnetName = '${baseName}-vnet'
 var kubernetesSubnetName = 'k8s-subnet'
+var aksApiServerSubnetName = 'k8s-apiserver-subnet'
 var applicationGatewaySubnetName = 'appgw-subnet'
 var databaseSubnetName = 'postgres-subnet'
 var redisSubnetName = 'redis-subnet'
@@ -134,6 +138,28 @@ resource networkSecurityGroupAks 'Microsoft.Network/networkSecurityGroups@2021-0
   }
 }
 
+resource networkSecurityGroupAksApiServer 'Microsoft.Network/networkSecurityGroups@2021-02-01' = {
+  name: '${baseName}-k8s-apiserver-nsg'
+  location: location
+  properties: {
+    securityRules: [
+      {
+        name: 'AllowAnyHTTPSInbound'
+        properties: {
+          priority: 1000
+          access: 'Allow'
+          direction: 'Inbound'
+          destinationPortRange: '443'
+          protocol: 'Tcp'
+          sourcePortRange: '*'
+          sourceAddressPrefix: '*'
+          destinationAddressPrefix: '*'
+        }
+      }
+    ]
+  }
+}
+
 resource networkSecurityGroupDatabase 'Microsoft.Network/networkSecurityGroups@2021-02-01' = {
   name: '${baseName}-postgres-nsg'
   location: location
@@ -195,6 +221,15 @@ resource vnet 'Microsoft.Network/virtualNetworks@2018-08-01' = {
             id: networkSecurityGroupAks.id
           }
           addressPrefix: aksSubnetAddressPrefix
+        }
+      }
+      {
+        name: aksApiServerSubnetName
+        properties: {
+          networkSecurityGroup: {
+            id: networkSecurityGroupAksApiServer.id
+          }
+          addressPrefix: aksApiServerSubnetAddressPrefix
         }
       }
       {
