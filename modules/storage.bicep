@@ -1,6 +1,9 @@
 @description('Specifies the base name for all resources.')
 param baseName string
 
+@description('Specifies a unique identifier to be added to resource names.')
+param id string = '001'
+
 @description('Specifies the location to deploy to.')
 param location string
 
@@ -28,9 +31,6 @@ param redisSubnetResourceId string
   '3'
 ])
 param availabilityZone string = '1'
-
-// TODO: Change later
-var id = '001'
 
 resource postgresqlServer 'Microsoft.DBforPostgreSQL/flexibleServers@2023-03-01-preview' = {
   name: '${baseName}${id}'

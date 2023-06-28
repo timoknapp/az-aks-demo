@@ -11,6 +11,24 @@ param postgresServerAdminLogin string = 'postgres'
 @secure()
 param postgresServerAdminPassword string
 
+@description('Specifies the Kubernetes version.')
+@allowed([
+  '1.26.3'
+  '1.26.0'
+  '1.25.6'
+  '1.25.5'
+  '1.24.10'
+  '1.24.9'
+])
+param kubernetesVersion string = '1.24.10'
+
+@description('Specifies the number of agent nodes for the cluster.')
+@minValue(1)
+@maxValue(50)
+param agentCount int = 3
+
+@description('Specifies the VM size of agent nodes.')
+param agentVMSize string = 'Standard_D2ds_v5'
 
 module network 'modules/network.bicep' = {
   name: 'network'
@@ -30,5 +48,17 @@ module storage 'modules/storage.bicep' = {
     postgresPrivateDnsZoneResourceId: network.outputs.postgresPrivateDnsZoneResourceId
     postgresSubnetResourceId: network.outputs.postgresSubnetResourceId
     redisSubnetResourceId: network.outputs.redisSubnetResourceId
+  }
+}
+
+module cluster 'modules/cluster.bicep' = {
+  name: 'cluster'
+  params: {
+    baseName: baseName
+    location: location
+    clusterSubnetResourceId: '' //network.outputs.clusterSubnetResourceId
+    kubernetesVersion: kubernetesVersion
+    agentCount: agentCount
+    agentVMSize: agentVMSize
   }
 }
