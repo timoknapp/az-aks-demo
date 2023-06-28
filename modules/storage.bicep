@@ -18,6 +18,12 @@ param postgresPrivateDnsZoneResourceId string
 @description('Specifies the resource ID of the delegated subnet for PostgreSQL.')
 param postgresSubnetResourceId string
 
+@description('Specifies the name of PostgreSQL database to be deployed for testing.')
+param postgresDatabase string = ''
+
+@description('Specifies whether to create the database specified by \'database\'. This should only be set if Azure AD is not used.')
+param deployDatabase bool = (postgresDatabase != '')
+
 @description('Specifies the resource ID of the delegated subnet for Redis.')
 param redisSubnetResourceId string
 
@@ -29,7 +35,7 @@ param redisSubnetResourceId string
 ])
 param availabilityZone string = '1'
 
-resource postgresqlServer 'Microsoft.DBforPostgreSQL/flexibleServers@2023-03-01-preview' = {
+resource postgresServer 'Microsoft.DBforPostgreSQL/flexibleServers@2023-03-01-preview' = {
   name: '${baseName}-dbsrv'
   location: location
   sku: {
@@ -56,6 +62,11 @@ resource postgresqlServer 'Microsoft.DBforPostgreSQL/flexibleServers@2023-03-01-
       privateDnsZoneArmResourceId: postgresPrivateDnsZoneResourceId
     }
   }
+}
+
+resource postgresTestDatabase 'Microsoft.DBforPostgreSQL/flexibleServers/databases@2022-12-01' = if (deployDatabase) {
+  name: postgresDatabase
+  parent: postgresServer
 }
 
 resource redisCache 'Microsoft.Cache/redis@2023-04-01' = {

@@ -47,6 +47,7 @@ module storage 'modules/storage.bicep' = {
     postgresServerAdminPassword: postgresServerAdminPassword
     postgresPrivateDnsZoneResourceId: network.outputs.postgresPrivateDnsZoneResourceId
     postgresSubnetResourceId: network.outputs.postgresSubnetResourceId
+    postgresDatabase: 'demo'
     redisSubnetResourceId: network.outputs.redisSubnetResourceId
   }
 }
