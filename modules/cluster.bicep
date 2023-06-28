@@ -37,6 +37,8 @@ param enableKEDA bool = false
 
 var clusterName = '${baseName}-cluster'
 
+var enableApiServerVnetIntegration = false
+
 resource aksIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2022-01-31-preview' = {
   location: location
   name: clusterName
@@ -93,8 +95,8 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2023-04-02-previ
     ]
 
     apiServerAccessProfile: {
-      enableVnetIntegration: false
-      subnetId: apiServerSubnetResourceId
+      enableVnetIntegration: enableApiServerVnetIntegration
+      subnetId: enableApiServerVnetIntegration ? apiServerSubnetResourceId : ''
     }
       
     networkProfile: {
