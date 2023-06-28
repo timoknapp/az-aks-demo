@@ -168,7 +168,7 @@ resource acrPullAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' 
   }
 }
 
-resource variables_vnetName_variables_kubernetesSubnetName_Microsoft_Authorization_id_aksvnetaccess 'Microsoft.Network/virtualNetworks/subnets/providers/roleAssignments@2017-05-01' = {
+resource networkContributorAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid(resourceGroup().id, aksCluster.id, networkContributor.id) 
   scope: resourceGroup()
   properties: {
