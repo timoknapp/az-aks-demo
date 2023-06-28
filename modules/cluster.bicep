@@ -152,12 +152,28 @@ resource acrPull 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing =
   scope: subscription()
 }
 
+@description('This is the built-in NetWork Contributor role.')
+resource networkContributor 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+  name: '4d97b98b-1d4f-4787-a291-c67834d212e7'
+  scope: subscription()
+}
+
 resource acrPullAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid(resourceGroup().id, aksCluster.id, acrPull.id)
   scope: containerRegistry
   properties: {
     roleDefinitionId: acrPull.id
     principalId: aksCluster.properties.identityProfile.kubeletidentity.objectId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource variables_vnetName_variables_kubernetesSubnetName_Microsoft_Authorization_id_aksvnetaccess 'Microsoft.Network/virtualNetworks/subnets/providers/roleAssignments@2017-05-01' = {
+  name: guid(resourceGroup().id, aksCluster.id, networkContributor.id) 
+  scope: resourceGroup()
+  properties: {
+    roleDefinitionId: networkContributor.id
+    principalId: aksIdentity.id
     principalType: 'ServicePrincipal'
   }
 }
