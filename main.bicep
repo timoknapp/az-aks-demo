@@ -5,7 +5,7 @@ param baseName string = 'freenow${substring(replace(guid(resourceGroup().id), '-
 param location string = resourceGroup().location
 
 @description('Specifies the admin username of the PostgreSQL server.')
-param postgresServerAdminLogin string = 'postgres'
+param postgresServerAdminLogin string = 'freenowadmin'
 
 @description('Specifies the password of the PostgreSQL server administrator.')
 @secure()
