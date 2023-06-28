@@ -136,7 +136,7 @@ resource containerRegistry 'Microsoft.ContainerRegistry/registries@2022-12-01' =
 }
 
 resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
-  name: '${baseName}-logs}'
+  name: '${baseName}-logs'
   location: location
   properties: {
     retentionInDays: 30
