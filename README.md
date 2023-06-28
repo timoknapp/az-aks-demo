@@ -6,13 +6,6 @@
 
 * Azure CLI version 2.47.0 or later
 * kubectl
-* Helm version 3.0 or later
-* jq
-
-Following the following tutorials:
-
-* [AKS + Application Gateway (excluding Application Gateway Ingress Controller parts)](https://learn.microsoft.com/en-us/azure/application-gateway/ingress-controller-install-new)
-* [Ingress Web Application Routing](https://learn.microsoft.com/en-us/azure/aks/web-app-routing?tabs=without-osm)
 
 ## Getting started
 
