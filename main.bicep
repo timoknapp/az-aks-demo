@@ -20,8 +20,8 @@ module network 'modules/network.bicep' = {
   }
 }
 
-module database 'modules/database.bicep' = {
-  name: 'database'
+module storage 'modules/storage.bicep' = {
+  name: 'storage'
   params: {
     baseName: baseName
     location: location

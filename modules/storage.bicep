@@ -75,3 +75,16 @@ resource redisCache 'Microsoft.Cache/redis@2023-04-01' = {
     subnetId: redisSubnetResourceId
   }
 }
+
+resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
+  name: '${baseName}${id}'
+  location: location
+  sku: {
+    name: 'Standard_LRS'
+  }
+  kind: 'StorageV2'
+  properties: {
+    accessTier: 'Hot'
+    supportsHttpsTrafficOnly: true
+  }
+}

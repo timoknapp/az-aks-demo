@@ -4,31 +4,46 @@ param baseName string
 @description('Specifies the location to deploy to.')
 param location string
 
-var resgpguid = substring(replace(guid(resourceGroup().id), '-', ''), 0, 4)
-var vnetName = 'vnet-${location}-${resgpguid}'
-var nsgAppGwName = 'nsg-appgw-${location}-${resgpguid}'
-var nsgAksName = 'nsg-aks-${location}-${resgpguid}'
-var nsgDatabaseName = 'nsg-database-${location}-${resgpguid}'
-var nsgRedisName = 'nsg-redis-${location}-${resgpguid}'
+@description('The sku of the Application Gateway. Default: WAF_v2 (Detection mode). In order to further customize WAF, use azure portal or cli.')
+@allowed([
+  'Standard_v2'
+  'WAF_v2'
+])
+param applicationGatewaySku string = 'WAF_v2'
+
+@description('IP Address of the Ingress Controller within AKS used as a backend pool in Application Gateway.')
+param aksIngressServiceIP string = '10.252.0.20'
+
+@description('VNET IP address prefix.')
+param virtualNetworkAddressPrefix string = '10.1.0.0/16'
+
+@description('AKS subnet IP address prefix.')
+param aksSubnetAddressPrefix string = '10.1.0.0/17'
+
+@description('App Gateway subnet IP address prefix.')
+param applicationGatewaySubnetAddressPrefix string = '10.1.252.0/23'
+
+@description('Database subnet IP address prefix.')
+param databaseSubnetAddressPrefix string = '10.1.224.0/20'
+
+@description('Redis subnet IP address prefix.')
+param redisSubnetAddressPrefix string = '10.1.254.0/24'
+
+var applicationGatewayName = 'appgw-${location}'
+var applicationGatewayPublicIpName = 'pip-appgw-${location}'
+var webApplicationFirewallConfiguration = {
+  enabled: 'true'
+  firewallMode: 'Detection'
+}
+var vnetName = 'vnet-${location}'
+var nsgAppGwName = 'nsg-appgw-${location}'
+var nsgAksName = 'nsg-aks-${location}'
+var nsgDatabaseName = 'nsg-database-${location}'
+var nsgRedisName = 'nsg-redis-${location}'
 var kubernetesSubnetName = 'snet-k8s'
 var applicationGatewaySubnetName = 'snet-appgw'
 var databaseSubnetName = 'snet-database'
 var redisSubnetName = 'snet-redis'
-
-@description('VNET IP address prefix.')
-param virtualNetworkAddressPrefix string = '10.0.0.0/8'
-
-@description('AKS subnet IP address prefix.')
-param aksSubnetAddressPrefix string = '10.254.0.0/16'
-
-@description('App Gateway subnet IP address prefix.')
-param applicationGatewaySubnetAddressPrefix string = '10.255.252.0/23'
-
-@description('Database subnet IP address prefix.')
-param databaseSubnetAddressPrefix string = '10.255.224.0/20'
-
-@description('Redis subnet IP address prefix.')
-param redisSubnetAddressPrefix string = '10.255.254.0/24'
 
 resource networkSecurityGroupAppGw 'Microsoft.Network/networkSecurityGroups@2021-02-01' = {
   name: nsgAppGwName
@@ -239,6 +254,116 @@ resource privateDnsZoneVnetLinkPostgres 'Microsoft.Network/privateDnsZones/virtu
     virtualNetwork: {
       id: resourceId('Microsoft.Network/virtualNetworks', vnetName)
     }
+  }
+}
+
+resource applicationGatewayPublicIp 'Microsoft.Network/publicIPAddresses@2018-08-01' = {
+  name: applicationGatewayPublicIpName
+  location: location
+
+  sku: {
+    name: 'Standard'
+  }
+  properties: {
+    publicIPAllocationMethod: 'Static'
+  }
+}
+
+resource applicationGateway 'Microsoft.Network/applicationGateways@2018-08-01' = {
+  name: applicationGatewayName
+  location: location
+  properties: {
+    sku: {
+      name: applicationGatewaySku
+      tier: applicationGatewaySku
+      capacity: 2
+    }
+    gatewayIPConfigurations: [
+      {
+        name: 'appGatewayIpConfig'
+        properties: {
+          subnet: {
+            id: resourceId('Microsoft.Network/virtualNetworks/subnets', vnetName, applicationGatewaySubnetName)
+          }
+        }
+      }
+    ]
+    frontendIPConfigurations: [
+      {
+        name: 'appGatewayFrontendIP'
+        properties: {
+          publicIPAddress: {
+            id: applicationGatewayPublicIp.id
+          }
+        }
+      }
+    ]
+    frontendPorts: [
+      {
+        name: 'httpPort'
+        properties: {
+          port: 80
+        }
+      }
+      {
+        name: 'httpsPort'
+        properties: {
+          port: 443
+        }
+      }
+    ]
+    backendAddressPools: [
+      {
+        name: 'aksIngressControllerPool'
+        properties: {
+          backendAddresses: [
+            {
+              ipAddress: aksIngressServiceIP
+            }
+          ]
+        }
+      }
+    ]
+    httpListeners: [
+      {
+        name: 'httpListener'
+        properties: {
+          protocol: 'Http'
+          frontendPort: {
+            id: resourceId('Microsoft.Network/applicationGateways/frontendPorts', applicationGatewayName, 'httpPort')
+          }
+          frontendIPConfiguration: {
+            id: resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', applicationGatewayName, 'appGatewayFrontendIP')
+          }
+        }
+      }
+    ]
+    backendHttpSettingsCollection: [
+      {
+        name: 'setting'
+        properties: {
+          port: 80
+          protocol: 'Http'
+        }
+      }
+    ]
+    requestRoutingRules: [
+      {
+        name: 'rule1'
+        properties: {
+          httpListener: {
+            id: resourceId('Microsoft.Network/applicationGateways/httpListeners', applicationGatewayName, 'httpListener')
+          }
+          backendAddressPool: {
+            id: resourceId('Microsoft.Network/applicationGateways/backendAddressPools', applicationGatewayName, 'aksIngressControllerPool')
+          }
+          backendHttpSettings: {
+            id: resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', applicationGatewayName, 'setting')
+          }
+        }
+      }
+    ]
+    webApplicationFirewallConfiguration: ((applicationGatewaySku == 'WAF_v2') ? webApplicationFirewallConfiguration : null)
   }
 }
 
