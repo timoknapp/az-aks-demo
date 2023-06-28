@@ -61,5 +61,6 @@ module cluster 'modules/cluster.bicep' = {
     kubernetesVersion: kubernetesVersion
     agentCount: agentCount
     agentVMSize: agentVMSize
+    enableKEDA: true
   }
 }
