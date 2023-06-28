@@ -399,8 +399,7 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2018-08-01' =
 }
 
 output postgresPrivateDnsZoneResourceId string = privateDnsZonePostgres.id
-output clusterSubnetResourceId string = vnet.properties.subnets[0].id
-output apiServerSubnetResourceId string = vnet.properties.subnets[1].id
-output postgresSubnetResourceId string = vnet.properties.subnets[2].id
-output redisSubnetResourceId string = vnet.properties.subnets[3].id
-
+output clusterSubnetResourceId string = resourceId('Microsoft.Network/virtualNetworks/subnets', vnetName, kubernetesSubnetName)
+output apiServerSubnetResourceId string = resourceId('Microsoft.Network/virtualNetworks/subnets', vnetName, apiServerSubnetName)
+output postgresSubnetResourceId string = resourceId('Microsoft.Network/virtualNetworks/subnets', vnetName, databaseSubnetName)
+output redisSubnetResourceId string = resourceId('Microsoft.Network/virtualNetworks/subnets', vnetName, redisSubnetName)
