@@ -29,8 +29,8 @@ param databaseSubnetAddressPrefix string = '10.1.224.0/20'
 @description('Redis subnet IP address prefix.')
 param redisSubnetAddressPrefix string = '10.1.254.0/24'
 
-var applicationGatewayName = 'appgw-${location}'
-var applicationGatewayPublicIpName = 'pip-appgw-${location}'
+var applicationGatewayName = '${baseName}-appgw'
+var applicationGatewayPublicIpName = '${baseName}-pip-appgw'
 var webApplicationFirewallConfiguration = {
   enabled: 'true'
   firewallMode: 'Detection'
