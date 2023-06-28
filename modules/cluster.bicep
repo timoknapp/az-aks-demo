@@ -18,6 +18,9 @@ param kubernetesVersion string
 @description('Specifies the resource ID of the delegated subnet for the cluster.')
 param clusterSubnetResourceId string
 
+@description('Specifies the resource ID of the delegated subnet for the API server.')
+param apiServerSubnetResourceId string
+
 @description('Specifies the number of agent nodes for the cluster.')
 @minValue(1)
 @maxValue(50)
@@ -39,7 +42,7 @@ resource aksIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2022-01-3
   name: clusterName
 }
 
-resource aksCluster 'Microsoft.ContainerService/managedClusters@2023-04-01' = {
+resource aksCluster 'Microsoft.ContainerService/managedClusters@2023-04-02-preview' = {
   name: clusterName
   location: location
   identity: {
@@ -88,6 +91,11 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2023-04-01' = {
         ]
       }
     ]
+
+    apiServerAccessProfile: {
+      enableVnetIntegration: false
+      subnetId: apiServerSubnetResourceId
+    }
       
     networkProfile: {
       networkPolicy: 'azure'
@@ -173,7 +181,7 @@ resource networkContributorAssignment 'Microsoft.Authorization/roleAssignments@2
   scope: resourceGroup()
   properties: {
     roleDefinitionId: networkContributor.id
-    principalId: aksIdentity.id
+    principalId: aksIdentity.properties.principalId
     principalType: 'ServicePrincipal'
   }
 }

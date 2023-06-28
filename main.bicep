@@ -58,6 +58,7 @@ module cluster 'modules/cluster.bicep' = {
     baseName: baseName
     location: location
     clusterSubnetResourceId: network.outputs.clusterSubnetResourceId
+    apiServerSubnetResourceId: network.outputs.apiServerSubnetResourceId
     kubernetesVersion: kubernetesVersion
     agentCount: agentCount
     agentVMSize: agentVMSize

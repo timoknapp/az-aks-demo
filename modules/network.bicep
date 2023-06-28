@@ -40,7 +40,7 @@ var webApplicationFirewallConfiguration = {
 }
 var vnetName = '${baseName}-vnet'
 var kubernetesSubnetName = 'k8s-subnet'
-var aksApiServerSubnetName = 'k8s-apiserver-subnet'
+var apiServerSubnetName = 'k8s-apiserver-subnet'
 var applicationGatewaySubnetName = 'appgw-subnet'
 var databaseSubnetName = 'postgres-subnet'
 var redisSubnetName = 'redis-subnet'
@@ -224,21 +224,12 @@ resource vnet 'Microsoft.Network/virtualNetworks@2018-08-01' = {
         }
       }
       {
-        name: aksApiServerSubnetName
+        name: apiServerSubnetName
         properties: {
           networkSecurityGroup: {
             id: networkSecurityGroupAksApiServer.id
           }
           addressPrefix: aksApiServerSubnetAddressPrefix
-        }
-      }
-      {
-        name: applicationGatewaySubnetName
-        properties: {
-          networkSecurityGroup: {
-            id: networkSecurityGroupAppGw.id
-          }
-          addressPrefix: applicationGatewaySubnetAddressPrefix
         }
       }
       {
@@ -265,6 +256,15 @@ resource vnet 'Microsoft.Network/virtualNetworks@2018-08-01' = {
             id: networkSecurityGroupRedis.id
           }
           addressPrefix: redisSubnetAddressPrefix
+        }
+      }
+      {
+        name: applicationGatewaySubnetName
+        properties: {
+          networkSecurityGroup: {
+            id: networkSecurityGroupAppGw.id
+          }
+          addressPrefix: applicationGatewaySubnetAddressPrefix
         }
       }
     ]
@@ -400,6 +400,7 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2018-08-01' =
 
 output postgresPrivateDnsZoneResourceId string = privateDnsZonePostgres.id
 output clusterSubnetResourceId string = vnet.properties.subnets[0].id
+output apiServerSubnetResourceId string = vnet.properties.subnets[1].id
 output postgresSubnetResourceId string = vnet.properties.subnets[2].id
 output redisSubnetResourceId string = vnet.properties.subnets[3].id
 
