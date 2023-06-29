@@ -28,7 +28,7 @@ param kubernetesVersion string = '1.24.10'
 param agentCount int = 3
 
 @description('Specifies the VM size of agent nodes.')
-param agentVMSize string = 'Standard_D2ds_v5'
+param agentVMSize string = 'Standard_D2as_v5'
 
 module network 'modules/network.bicep' = {
   name: 'network'
