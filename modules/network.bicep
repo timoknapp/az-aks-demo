@@ -33,7 +33,7 @@ param redisSubnetAddressPrefix string = '10.1.254.0/24'
 param aksApiServerSubnetAddressPrefix string = '10.1.255.0/24'
 
 var applicationGatewayName = '${baseName}-appgw'
-var applicationGatewayPublicIpName = '${baseName}-pip-appgw'
+var applicationGatewayPublicIpName = '${baseName}-appgw-pip'
 var webApplicationFirewallConfiguration = {
   enabled: 'true'
   firewallMode: 'Detection'
