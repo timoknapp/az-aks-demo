@@ -96,3 +96,13 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
     supportsHttpsTrafficOnly: true
   }
 }
+
+resource queueService 'Microsoft.Storage/storageAccounts/queueServices@2022-09-01' = {
+  name: 'default'
+  parent: storageAccount
+}
+
+resource testQueue 'Microsoft.Storage/storageAccounts/queueServices/queues@2022-09-01' = {
+  name: 'test'
+  parent: queueService
+}
