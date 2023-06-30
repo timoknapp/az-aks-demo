@@ -230,6 +230,14 @@ resource vnet 'Microsoft.Network/virtualNetworks@2018-08-01' = {
             id: networkSecurityGroupAksApiServer.id
           }
           addressPrefix: aksApiServerSubnetAddressPrefix
+          delegations: [
+            {
+              name: 'Microsoft.ContainerService/managedClusters'
+              properties: {
+                serviceName: 'Microsoft.ContainerService/managedClusters'
+              }
+            }
+          ]
         }
       }
       {
