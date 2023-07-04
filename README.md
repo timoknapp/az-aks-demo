@@ -73,6 +73,6 @@ deploymentName="aks-demo-$nodePoolName-freenow-001"
 az deployment group create \
   --name $deploymentName \
   --resource-group $resourceGroupName \
-  --template-file ./aks/modules/nodepool.bicep \
+  --template-file ./modules/nodepool.bicep \
   --parameters clusterName="$clusterName" nodePoolName="$nodePoolName"
 ```
