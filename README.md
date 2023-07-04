@@ -63,9 +63,16 @@ az aks update -n <cluster-name> \
 
 ### Adding a node pool to the cluster
 ```bash
-deploymentName="aks-demo-nodepool-freenow-001"
 # Update these values so that they match the actual deployed resources
 resourceGroupName="rg-aks-demo-freenow-001"
 clusterName="freenow1234-cluster"
 nodePoolName="nodepool2"
+
+deploymentName="aks-demo-$nodePoolName-freenow-001"
+
+az deployment group create \
+  --name $deploymentName \
+  --resource-group $resourceGroupName \
+  --template-file ./aks/modules/nodepool.bicep \
+  --parameters clusterName="$clusterName" nodePoolName="$nodePoolName"
 ```
