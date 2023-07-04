@@ -50,17 +50,22 @@ az extension update --name aks-preview
 
 # Register the EnableAPIServerVnetIntegrationPreview feature flag using the az feature register command.
 az feature register --namespace "Microsoft.ContainerService" --name "EnableAPIServerVnetIntegrationPreview"
-#Verify the registration status using the az feature show command:
+# Verify the registration status using the az feature show command - this may take some time
 az feature show --namespace "Microsoft.ContainerService" --name "EnableAPIServerVnetIntegrationPreview"
+# Re-register the provider
 az provider register --namespace Microsoft.ContainerService
 
 # Enable private cluster mode
 az aks update -n <cluster-name> \
     -g <resource-group> \
     --enable-private-cluster
+```
 
-# Disable private cluster mode
-az aks update -n <cluster-name> \
-    -g <resource-group> \
-    --disable-private-cluster
+### Adding a node pool to the cluster
+```bash
+deploymentName="aks-demo-nodepool-freenow-001"
+# Update these values so that they match the actual deployed resources
+resourceGroupName="rg-aks-demo-freenow-001"
+clusterName="freenow1234-cluster"
+nodePoolName="nodepool2"
 ```
