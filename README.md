@@ -37,14 +37,30 @@ az deployment group create \
         --parameters parameters.json
 ```
 
-### TODOs
+### Enable / disable private AKS cluster
 
-* ~~Application Gateway with one Backend Pool pointing to AKS Ingress Controller~~
-* AKS Api Server VNET integration
-* ~~Azure AD Pod Identity~~
-* ~~Postgres Flexible Server~~
-* ~~Storage Account~~
-* ~~Redis Cache~~
-* ~~Container Registry~~
-* ~~Log Analytics Workspace~~
-* ~~AKS KEDA Addon~~
+[Link to documentation](https://learn.microsoft.com/en-US/azure/aks/api-server-vnet-integration#enable-or-disable-private-cluster-mode-on-an-existing-cluster-with-api-server-vnet-integration)
+
+```bash
+# Install the aks-preview extension
+az extension add --name aks-preview
+
+# Update the extension to make sure you have the latest version installed
+az extension update --name aks-preview
+
+# Register the EnableAPIServerVnetIntegrationPreview feature flag using the az feature register command.
+az feature register --namespace "Microsoft.ContainerService" --name "EnableAPIServerVnetIntegrationPreview"
+#Verify the registration status using the az feature show command:
+az feature show --namespace "Microsoft.ContainerService" --name "EnableAPIServerVnetIntegrationPreview"
+az provider register --namespace Microsoft.ContainerService
+
+# Enable private cluster mode
+az aks update -n <cluster-name> \
+    -g <resource-group> \
+    --enable-private-cluster
+
+# Disable private cluster mode
+az aks update -n <cluster-name> \
+    -g <resource-group> \
+    --disable-private-cluster
+```
