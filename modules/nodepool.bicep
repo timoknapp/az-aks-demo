@@ -52,7 +52,6 @@ resource nodepool 'Microsoft.ContainerService/managedClusters/agentPools@2023-04
     orchestratorVersion: kubernetesVersion
     osType: 'Linux'
     osDiskType: 'Managed'
-    podSubnetID: cluster.properties.agentPoolProfiles[0].podSubnetID
     vmSize: agentVMSize
     vnetSubnetID: cluster.properties.agentPoolProfiles[0].vnetSubnetID
   }
