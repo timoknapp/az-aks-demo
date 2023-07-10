@@ -33,7 +33,7 @@ param minCount int = 3
 param maxCount int = 50
 
 @description('Specifies the VM size of agent nodes.')
-param agentVMSize string = 'Standard_D4ds_v4'
+param agentVMSize string = 'Standard_D4s_v3'
 
 resource cluster 'Microsoft.ContainerService/managedClusters@2023-04-02-preview' existing = {
   name: clusterName
