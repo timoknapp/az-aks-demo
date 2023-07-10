@@ -383,6 +383,25 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2018-08-01' =
         properties: {
           port: 80
           protocol: 'Http'
+          pickHostNameFromBackendAddress: false
+          probe: {
+            id: resourceId('Microsoft.Network/applicationGateways/probes', applicationGatewayName, 'custom-probe')
+          }
+        }
+      }
+    ]
+    probes: [
+      {
+        name: 'custom-probe'
+        properties: {
+          protocol: 'Http'
+          host: aksIngressServiceIP
+          path: '/kube-system/healthz'
+          interval: 30
+          timeout: 120
+          unhealthyThreshold: 3
+          pickHostNameFromBackendHttpSettings: false
+          minServers: 0
         }
       }
     ]
