@@ -39,8 +39,8 @@ resource postgresServer 'Microsoft.DBforPostgreSQL/flexibleServers@2023-03-01-pr
   name: '${baseName}-dbsrv'
   location: location
   sku: {
-    name: 'Standard_B2s'
-    tier: 'Burstable'
+    name: 'Standard_D2s_v3'
+    tier: 'GeneralPurpose'
   }
   properties: {
     storage: {
