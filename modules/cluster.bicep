@@ -21,10 +21,15 @@ param clusterSubnetResourceId string
 @description('Specifies the resource ID of the delegated subnet for the API server.')
 param apiServerSubnetResourceId string
 
-@description('Specifies the number of agent nodes for the cluster.')
+@description('Specifies the minimum number of agent nodes for the cluster.')
 @minValue(1)
 @maxValue(50)
-param agentCount int
+param minCount int = 3
+
+@description('Specifies the maximum number of agent nodes for the cluster.')
+@minValue(1)
+@maxValue(50)
+param maxCount int = 50
 
 @description('Specifies the VM size of agent nodes.')
 param agentVMSize string 
@@ -77,9 +82,9 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2023-04-02-previ
     agentPoolProfiles: [
       {
         name: 'nodepool1'
-        count: agentCount
-        minCount: agentCount
-        maxCount: agentCount * 2
+        count: minCount
+        minCount: minCount
+        maxCount: maxCount
         vmSize: agentVMSize
         osType: 'Linux'
         mode: 'System'

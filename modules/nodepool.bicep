@@ -22,13 +22,18 @@ param mode string = 'System'
 ])
 param kubernetesVersion string = '1.24.10'
 
-@description('Specifies the number of agent nodes for the cluster.')
+@description('Specifies the minimum number of agent nodes for the cluster.')
 @minValue(1)
 @maxValue(50)
-param agentCount int = 3
+param minCount int = 3
+
+@description('Specifies the maximum number of agent nodes for the cluster.')
+@minValue(1)
+@maxValue(50)
+param maxCount int = 50
 
 @description('Specifies the VM size of agent nodes.')
-param agentVMSize string = 'Standard_D2ds_v4'
+param agentVMSize string = 'Standard_D4ds_v4'
 
 resource cluster 'Microsoft.ContainerService/managedClusters@2023-04-02-preview' existing = {
   name: clusterName
@@ -43,11 +48,11 @@ resource nodepool 'Microsoft.ContainerService/managedClusters/agentPools@2023-04
       '2'
       '3'
     ]
-    count: agentCount
+    count: minCount
     enableAutoScaling: true
-    maxCount: agentCount * 2
+    maxCount: maxCount
     maxPods: 30
-    minCount: agentCount
+    minCount: minCount
     mode: mode
     orchestratorVersion: kubernetesVersion
     osType: 'Linux'
