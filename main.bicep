@@ -60,7 +60,7 @@ module cluster 'modules/cluster.bicep' = {
     clusterSubnetResourceId: network.outputs.clusterSubnetResourceId
     apiServerSubnetResourceId: network.outputs.apiServerSubnetResourceId
     kubernetesVersion: kubernetesVersion
-    agentCount: agentCount
+    minCount: agentCount
     agentVMSize: agentVMSize
     enableKEDA: true
   }
