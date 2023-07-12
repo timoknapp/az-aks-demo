@@ -174,7 +174,7 @@ resource networkContributor 'Microsoft.Authorization/roleDefinitions@2022-04-01'
 }
 
 resource acrPullAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(resourceGroup().id, aksCluster.id, acrPull.id)
+  name: guid(resourceGroup().id, baseName, acrPull.id)
   scope: containerRegistry
   properties: {
     roleDefinitionId: acrPull.id
@@ -184,7 +184,7 @@ resource acrPullAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' 
 }
 
 resource networkContributorAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(resourceGroup().id, aksCluster.id, networkContributor.id) 
+  name: guid(resourceGroup().id, baseName, networkContributor.id) 
   scope: resourceGroup()
   properties: {
     roleDefinitionId: networkContributor.id
