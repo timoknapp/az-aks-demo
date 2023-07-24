@@ -1,11 +1,11 @@
 @description('Specifies the base name for all resources.')
-param baseName string = 'freenow${substring(replace(guid(resourceGroup().id), '-', ''), 0, 4)}'
+param baseName string = 'aksdemo${substring(replace(guid(resourceGroup().id), '-', ''), 0, 4)}'
 
 @description('Specifies the location to deploy to.')
 param location string = resourceGroup().location
 
 @description('Specifies the admin username of the PostgreSQL server.')
-param postgresServerAdminLogin string = 'freenowadmin'
+param postgresServerAdminLogin string = 'aksdemoadmin'
 
 @description('Specifies the password of the PostgreSQL server administrator.')
 @secure()

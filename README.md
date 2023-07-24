@@ -1,4 +1,4 @@
-# az-demo-fn
+# Azure AKS Demo
 
 ![architecture](architecture.png)
 
@@ -22,9 +22,9 @@ EOF
 ### Deploy Resources to Azure
 
 ```bash
-resourceGroupName="rg-aks-demo-freenow-001"
+resourceGroupName="rg-aks-demo-001"
 location="northeurope"
-deploymentName="aks-demo-freenow-001"
+deploymentName="aks-demo-001"
 
 # create a resource group
 az group create -n $resourceGroupName -l $location
@@ -53,7 +53,7 @@ az feature register --namespace "Microsoft.ContainerService" --name "EnableAPISe
 # Verify the registration status using the az feature show command - this may take some time
 az feature show --namespace "Microsoft.ContainerService" --name "EnableAPIServerVnetIntegrationPreview"
 # Re-register the provider
-az provider register --namespace Microsoft.ContainerService
+az provider register --namespace Microsoft.ContainerServices
 
 # Enable private cluster mode
 az aks update -n <cluster-name> \
@@ -64,11 +64,11 @@ az aks update -n <cluster-name> \
 ### Adding a node pool to the cluster
 ```bash
 # Update these values so that they match the actual deployed resources
-resourceGroupName="rg-aks-demo-freenow-001"
-clusterName="freenow1234-cluster"
+resourceGroupName="rg-aks-demo-001"
+clusterName="aksdemo1234-cluster"
 nodePoolName="nodepool2"
 
-deploymentName="aks-demo-$nodePoolName-freenow-001"
+deploymentName="aks-demo-$nodePoolName-001"
 
 az deployment group create \
   --name $deploymentName \
