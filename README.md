@@ -19,24 +19,6 @@ cat <<EOF > parameters.json
 EOF
 ```
 
-### Deploy Resources to Azure
-
-```bash
-resourceGroupName="rg-aks-demo-001"
-location="northeurope"
-deploymentName="aks-demo-001"
-
-# create a resource group
-az group create -n $resourceGroupName -l $location
-
-# modify the template as needed
-az deployment group create \
-        -g $resourceGroupName \
-        -n $deploymentName \
-        --template-file main.bicep \
-        --parameters parameters.json
-```
-
 ### Enable / disable private AKS cluster
 
 [Link to documentation](https://learn.microsoft.com/en-US/azure/aks/api-server-vnet-integration#enable-or-disable-private-cluster-mode-on-an-existing-cluster-with-api-server-vnet-integration)
@@ -53,7 +35,25 @@ az feature register --namespace "Microsoft.ContainerService" --name "EnableAPISe
 # Verify the registration status using the az feature show command - this may take some time
 az feature show --namespace "Microsoft.ContainerService" --name "EnableAPIServerVnetIntegrationPreview"
 # Re-register the provider
-az provider register --namespace Microsoft.ContainerServices
+az provider register --namespace "Microsoft.ContainerService"
+```
+
+### Deploy Resources to Azure
+
+```bash
+resourceGroupName="rg-aks-demo-001"
+location="northeurope"
+deploymentName="aks-demo-001"
+
+# create a resource group
+az group create -n $resourceGroupName -l $location
+
+# modify the template as needed
+az deployment group create \
+        -g $resourceGroupName \
+        -n $deploymentName \
+        --template-file main.bicep \
+        --parameters parameters.json
 
 # Enable private cluster mode
 az aks update -n <cluster-name> \
@@ -62,6 +62,7 @@ az aks update -n <cluster-name> \
 ```
 
 ### Adding a node pool to the cluster
+
 ```bash
 # Update these values so that they match the actual deployed resources
 resourceGroupName="rg-aks-demo-001"
